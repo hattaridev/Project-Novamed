@@ -112,7 +112,7 @@ Giọng nói → STT → POST /chat
 
 ## 🗺️ Workflow
 
-> Xem chi tiết tại **[hattaridev.github.io/novamed-architecture](https://hattaridev.github.io/novamed-architecture/)**
+> Xem chi tiết tại **[hattaridev.github.io/Project-Novamed/](hattaridev.github.io/Project-Novamed/)**
 
 Diagram mô tả đầy đủ:
 1. Luồng Web App bình thường (React ↔ WordPress API)
