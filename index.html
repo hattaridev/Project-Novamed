@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaMed System Workflow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #090d18;
+    --surface: #101624;
+    --surface2: #161f30;
+    --border: rgba(255,255,255,0.07);
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --blue: #3b82f6;
+    --cyan: #06b6d4;
+    --purple: #8b5cf6;
+    --green: #10b981;
+    --orange: #f59e0b;
+    --pink: #ec4899;
+    --teal: #14b8a6;
+    --indigo: #6366f1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.025) 1px, transparent 1px);
+    background-size: 44px 44px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 900px; height: 400px;
+    background: radial-gradient(ellipse at center, rgba(139,92,246,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 48px 32px 100px;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    text-align: center;
+    margin-bottom: 70px;
+  }
+  .header .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    border-radius: 100px;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.3);
+    color: #a78bfa;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 46px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .header p { color: var(--muted); font-size: 16px; }
+
+  /* ─── SECTION LABEL ─── */
+  .sec {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 56px 0 24px;
+  }
+  .sec .dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .sec h2 { font-size: 19px; font-weight: 700; white-space: nowrap; }
+  .sec .line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  /* ─── TIMELINE ─── */
+  .tl { position: relative; padding-left: 20px; }
+  .tl::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--tl-line, rgba(59,130,246,0.4));
+    border-radius: 2px;
+  }
+  .tl-item {
+    position: relative;
+    padding: 0 0 16px 20px;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -5px; top: 5px;
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: var(--tl-dot, #3b82f6);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 3px var(--tl-glow, rgba(59,130,246,0.25));
+  }
+  .tl-item h4 { font-size: 12px; font-weight: 700; color: var(--tl-dot, #3b82f6); margin-bottom: 3px; }
+  .tl-item p { font-size: 10.5px; color: var(--muted); line-height: 1.55; }
+
+  /* ─── FLOW BOXES ─── */
+  .fbox {
+    border-radius: 14px;
+    padding: 14px 12px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+    transition: transform .15s;
+  }
+  .fbox:hover { transform: translateY(-2px); }
+  .fbox .ico { font-size: 22px; display: block; margin-bottom: 6px; }
+  .fbox .sub { font-size: 9.5px; font-weight: 400; opacity: .65; margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+
+  /* ─── PIPE ARROW ─── */
+  .arr { color: var(--muted); font-size: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .arr-dn { color: var(--muted); font-size: 16px; text-align: center; padding: 2px 0; }
+
+  /* tag chip */
+  .chip {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 9.5px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* badge */
+  .badge-ok {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 12px; border-radius: 100px;
+    background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35);
+    color: #10b981; font-size: 10px; font-weight: 700;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { height: 5px; width: 5px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+  /* ─── PRINT / PDF ─── */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  @media print {
+    @page {
+      size: A3 landscape;
+      margin: 12mm 14mm;
+    }
+    body {
+      background: #090d18 !important;
+      -webkit-print-color-adjust: exact !important;
+    }
+    body::before, body::after { display: none; }
+    .wrapper { padding: 20px 20px 40px; max-width: 100%; }
+    .fbox:hover { transform: none; }
+    /* Force fixed position elements off */
+    * { position: static !important; }
+    .card { position: relative !important; overflow: visible !important; }
+    .card-top-bar { position: absolute !important; }
+    .fbox .sub { opacity: 0.65; }
+    /* No page breaks inside cards */
+    .card, .sec { page-break-inside: avoid; break-inside: avoid; }
+    .sec { page-break-before: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <div class="header">
+    <div class="pill">⚡ System Architecture</div>
+    <h1>NovaMed — System Workflow</h1>
+    <p>Luồng thực thi toàn hệ thống: Web App &amp; Voice AI Agent (Modal / Qwen)</p>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1 — WEB APP FLOW
+  ══════════════════════════════════════════════════ -->
+  <div class="sec">
+    <div class="dot" style="background:#3b82f6;box-shadow:0 0 9px #3b82f6;"></div>
+    <h2 style="color:#3b82f6;">① Luồng Web App bình thường</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card" style="padding:28px 28px 32px;">
+    <div class="card-top-bar" style="background:linear-gradient(90deg,#3b82f6,#6366f1);"></div>
+
+    <!-- horizontal steps -->
+    <div style="display:flex;align-items:flex-start;gap:0;margin-bottom:30px;">
+
+      <!-- step -->
+      <div style="flex:1;min-width:100px;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:60px;height:60px;border-radius:16px;background:rgba(59,130,246,0.14);border:1.5px solid rgba(59,130,246,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;transition:transform .15s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">👤</div>
+        <div style="margin-top:10px;font-size:11px;font-weight:700;text-align:center;">User</div>
+        <div style="font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;text-align:center;">Browser</div>
+      </div>
+      <div class="arr" style="margin-top:20px;padding:0 6px;">→</div>
+
+      <div style="flex:1;min-width:100px;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:60px;height:60px;border-radius:16px;background:rgba(99,102,241,0.14);border:1.5px solid rgba(99,102,241,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">⚛️</div>
+        <div style="margin-top:10px;font-size:11px;font-weight:700;text-align:center;">React App</div>
+        <div style="font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;text-align:center;">Vite + TypeScript</div>
+      </div>
+      <div class="arr" style="margin-top:20px;padding:0 6px;">→</div>
+
+      <div style="flex:1;min-width:100px;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:60px;height:60px;border-radius:16px;background:rgba(14,165,233,0.14);border:1.5px solid rgba(14,165,233,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">🔄</div>
+        <div style="margin-top:10px;font-size:11px;font-weight:700;text-align:center;">React Router</div>
+        <div style="font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;text-align:center;">Route matching</div>
+      </div>
+      <div class="arr" style="margin-top:20px;padding:0 6px;">→</div>
+
+      <div style="flex:1;min-width:100px;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:60px;height:60px;border-radius:16px;background:rgba(245,158,11,0.14);border:1.5px solid rgba(245,158,11,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">📦</div>
+        <div style="margin-top:10px;font-size:11px;font-weight:700;text-align:center;">AppContext</div>
+        <div style="font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;text-align:center;">Global State</div>
+      </div>
+      <div class="arr" style="margin-top:20px;padding:0 6px;">⇄</div>
+
+      <div style="flex:1;min-width:100px;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:60px;height:60px;border-radius:16px;background:rgba(16,185,129,0.14);border:1.5px solid rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">🌐</div>
+        <div style="margin-top:10px;font-size:11px;font-weight:700;text-align:center;">WordPress API</div>
+        <div style="font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;text-align:center;">REST + WooCommerce</div>
+      </div>
+      <div class="arr" style="margin-top:20px;padding:0 6px;">→</div>
+
+      <div style="flex:1;min-width:100px;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:60px;height:60px;border-radius:16px;background:rgba(236,72,153,0.14);border:1.5px solid rgba(236,72,153,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">📄</div>
+        <div style="margin-top:10px;font-size:11px;font-weight:700;text-align:center;">Page Components</div>
+        <div style="font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;text-align:center;">Render UI</div>
+      </div>
+      <div class="arr" style="margin-top:20px;padding:0 6px;">→</div>
+
+      <div style="flex:1;min-width:100px;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:60px;height:60px;border-radius:16px;background:rgba(59,130,246,0.14);border:1.5px solid rgba(59,130,246,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">✅</div>
+        <div style="margin-top:10px;font-size:11px;font-weight:700;text-align:center;">Hiển thị kết quả</div>
+        <div style="font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;text-align:center;">User sees result</div>
+      </div>
+    </div>
+
+    <!-- 3 sub-flows -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;">
+
+      <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.14);border-radius:14px;padding:18px;">
+        <div style="font-size:10px;font-weight:800;color:#3b82f6;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px;">🛒 Shop / Product Flow</div>
+        <div class="tl" style="--tl-line:rgba(59,130,246,0.35);--tl-dot:#3b82f6;--tl-glow:rgba(59,130,246,0.25);">
+          <div class="tl-item"><h4>Navigate /shop</h4><p>React Router render ShopPage component</p></div>
+          <div class="tl-item"><h4>fetchProducts()</h4><p>GET /wp-json/wc/v3/products → parse JSON</p></div>
+          <div class="tl-item"><h4>applyFilters()</h4><p>category / price / sort → filteredProducts state → re-render</p></div>
+          <div class="tl-item" style="padding-bottom:0;"><h4>addToCart()</h4><p>CartItem[] → AppContext → localStorage persist</p></div>
+        </div>
+      </div>
+
+      <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.14);border-radius:14px;padding:18px;">
+        <div style="font-size:10px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px;">💳 Checkout Flow</div>
+        <div class="tl" style="--tl-line:rgba(16,185,129,0.35);--tl-dot:#10b981;--tl-glow:rgba(16,185,129,0.25);">
+          <div class="tl-item"><h4>Navigate /checkout</h4><p>Load cart items từ AppContext</p></div>
+          <div class="tl-item"><h4>Điền form</h4><p>firstName / lastName / phone / address / city...</p></div>
+          <div class="tl-item"><h4>Chọn thanh toán</h4><p>COD / SePay QR / Chuyển khoản</p></div>
+          <div class="tl-item" style="padding-bottom:0;"><h4>POST order</h4><p>/wp-json/wc/v3/orders → nhận Order ID</p></div>
+        </div>
+      </div>
+
+      <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.14);border-radius:14px;padding:18px;">
+        <div style="font-size:10px;font-weight:800;color:#8b5cf6;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px;">🔐 Auth Flow</div>
+        <div class="tl" style="--tl-line:rgba(139,92,246,0.35);--tl-dot:#8b5cf6;--tl-glow:rgba(139,92,246,0.25);">
+          <div class="tl-item"><h4>POST /jwt-auth/v1/token</h4><p>username + password → WordPress JWT</p></div>
+          <div class="tl-item"><h4>Chọn 2FA method</h4><p>OTP (email) hoặc Voice ID</p></div>
+          <div class="tl-item"><h4>Xác thực 2FA</h4><p>OTP 6 chữ số / Voice biometrics matching</p></div>
+          <div class="tl-item" style="padding-bottom:0;"><h4>JWT Token stored</h4><p>userProfile set → Dashboard access</p></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2 — VOICE AI AGENT END-TO-END
+  ══════════════════════════════════════════════════ -->
+  <div class="sec">
+    <div class="dot" style="background:#8b5cf6;box-shadow:0 0 9px #8b5cf6;"></div>
+    <h2 style="color:#8b5cf6;">② Luồng Voice AI Agent — End-to-End</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-top-bar" style="background:linear-gradient(90deg,#8b5cf6,#06b6d4,#10b981,#f59e0b,#ec4899);"></div>
+
+    <!-- Phase headers -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);">
+      <div style="padding:14px 12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#8b5cf6;text-align:center;border-right:1px solid var(--border);">① Audio Input</div>
+      <div style="padding:14px 12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#06b6d4;text-align:center;border-right:1px solid var(--border);">② STT</div>
+      <div style="padding:14px 12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#10b981;text-align:center;border-right:1px solid var(--border);">③ AI Processing</div>
+      <div style="padding:14px 12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#f59e0b;text-align:center;border-right:1px solid var(--border);">④ Intent Parsing</div>
+      <div style="padding:14px 12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#3b82f6;text-align:center;border-right:1px solid var(--border);">⑤ Action Execution</div>
+      <div style="padding:14px 12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#ec4899;text-align:center;">⑥ Output</div>
+    </div>
+
+    <!-- Columns -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);min-height:240px;">
+
+      <!-- COL 1: Audio -->
+      <div style="border-right:1px solid var(--border);padding:20px 14px;">
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;height:100%;">
+          <div class="fbox" style="background:rgba(139,92,246,0.12);border:1.5px solid rgba(139,92,246,0.3);color:#c4b5fd;width:100%;">
+            <span class="ico">🎙️</span>Microphone<div class="sub">getUserMedia()</div>
+          </div>
+          <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#a78bfa;margin-bottom:8px;">VAD Service</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              • Web Audio API FFT<br>• 85–3400 Hz band<br>• Wind/click filter<br>• Spectral analysis
+            </div>
+          </div>
+          <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#a78bfa;margin-bottom:8px;">Wake Word</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              "Nova ơi" → activate<br>Fuzzy matching + tonal<br>Exponential backoff<br>Auto resume
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 2: STT -->
+      <div style="border-right:1px solid var(--border);padding:20px 14px;">
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;height:100%;">
+          <div class="fbox" style="background:rgba(6,182,212,0.12);border:1.5px solid rgba(6,182,212,0.3);color:#67e8f9;width:100%;">
+            <span class="ico">📝</span>Web Speech API<div class="sub">SpeechRecognition</div>
+          </div>
+          <div style="background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#06b6d4;margin-bottom:8px;">Noise Filter</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              isNoiseTranscript()<br>• ≤1 ký tự → skip<br>• Filler words skip<br>• Repeat pattern skip
+            </div>
+          </div>
+          <div style="background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#06b6d4;margin-bottom:8px;">Error Handling</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              no-speech → retry<br>Max 6 retries<br>Exp. backoff<br>Auto-resume
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 3: AI — MODAL/QWEN -->
+      <div style="border-right:1px solid var(--border);padding:20px 14px;background:rgba(16,185,129,0.025);">
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;height:100%;">
+          <div class="fbox" style="background:rgba(16,185,129,0.15);border:2px solid rgba(16,185,129,0.45);color:#6ee7b7;width:100%;position:relative;">
+            <span class="ico">🤖</span>Modal / Qwen<div class="sub">Qwen3.5-35B-A3B</div>
+            <div style="position:absolute;top:-8px;right:8px;background:#10b981;color:#fff;font-size:8.5px;font-weight:800;padding:2px 8px;border-radius:100px;letter-spacing:.8px;">MAIN</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#10b981;margin-bottom:8px;">SGLang Server</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              POST /v1/chat/completions<br>tool_choice: auto<br>SSE streaming<br>FastAPI endpoint
+            </div>
+          </div>
+          <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#10b981;margin-bottom:8px;">Modal Infra</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              GPU: L40S 48GB<br>max 5 containers<br>Idle: 30 phút<br>Conc: 10 req/pod
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 4: Intent Parsing -->
+      <div style="border-right:1px solid var(--border);padding:20px 14px;">
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;height:100%;">
+          <div class="fbox" style="background:rgba(245,158,11,0.12);border:1.5px solid rgba(245,158,11,0.3);color:#fcd34d;width:100%;">
+            <span class="ico">🗺️</span>Intent Parser<div class="sub">mapToolCallToIntent()</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:8px;">Tool Call → Intent</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              finish_reason: tool_calls<br>→ ActionName + args<br>→ ParsedIntent<br>→ AgentIntent
+            </div>
+          </div>
+          <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:8px;">Multi-action</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              multi_action tool<br>→ actions[] array<br>→ sequential steps<br>(e.g. navigate+search)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 5: Action Executor -->
+      <div style="border-right:1px solid var(--border);padding:20px 14px;">
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;height:100%;">
+          <div class="fbox" style="background:rgba(59,130,246,0.12);border:1.5px solid rgba(59,130,246,0.3);color:#93c5fd;width:100%;">
+            <span class="ico">⚡</span>Action Executor<div class="sub">actionExecutor.ts</div>
+          </div>
+          <div style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#3b82f6;margin-bottom:8px;">30+ Actions</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              navigate / search<br>add_to_cart / filter<br>fill_form / submit<br>login / input_otp
+            </div>
+          </div>
+          <div style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#3b82f6;margin-bottom:8px;">ExecutorContext</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              navigate(), addToCart()<br>applyFilters()<br>logout(), showToast()<br>Fresh per step
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 6: Output -->
+      <div style="padding:20px 14px;">
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;height:100%;">
+          <div class="fbox" style="background:rgba(236,72,153,0.12);border:1.5px solid rgba(236,72,153,0.3);color:#f9a8d4;width:100%;">
+            <span class="ico">🔊</span>TTS + UI Update<div class="sub">speak() + render</div>
+          </div>
+          <div style="background:rgba(236,72,153,0.07);border:1px solid rgba(236,72,153,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#ec4899;margin-bottom:8px;">TTS Chain</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              ElevenLabs (AI voice)<br>→ fallback Web Speech<br>vi / en / jp langs<br>Rate: 1.0x
+            </div>
+          </div>
+          <div style="background:rgba(236,72,153,0.07);border:1px solid rgba(236,72,153,0.18);border-radius:12px;padding:12px;width:100%;">
+            <div style="font-size:10px;font-weight:700;color:#ec4899;margin-bottom:8px;">UI Feedback</div>
+            <div style="font-size:9.5px;color:var(--muted);line-height:1.6;">
+              Chat panel update<br>Element highlight<br>Toast toast<br>→ resume listening
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- loop bar -->
+    <div style="background:rgba(139,92,246,0.07);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:20px;">🔁</div>
+      <div style="font-size:11px;color:var(--muted);">Sau khi TTS hoàn thành → <strong style="color:#a78bfa;">tự động resume startListening()</strong> sau 500ms delay → vòng lặp mới. Nếu user nói "dừng lại" → <strong style="color:#f87171;">isStoppedRef = true</strong> → vào idle, dừng hoàn toàn.</div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3 — MODAL BACKEND AGENTIC LOOP (main)
+  ══════════════════════════════════════════════════ -->
+  <div class="sec">
+    <div class="dot" style="background:#10b981;box-shadow:0 0 9px #10b981;"></div>
+    <h2 style="color:#10b981;">③ Modal Backend — Agentic Loop (Chi tiết)</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-top-bar" style="background:linear-gradient(90deg,#10b981,#06b6d4,#8b5cf6);"></div>
+
+    <div style="padding:28px;">
+
+      <!-- Infra boxes -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;">
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.22);border-radius:16px;padding:18px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">🖥️</div>
+          <div style="font-size:12px;font-weight:800;color:#10b981;margin-bottom:6px;">Modal Container</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.7;">GPU: L40S 48GB<br>CUDA 12.1 + Python 3.11<br>Startup timeout: 600s<br>Max containers: 5</div>
+        </div>
+        <div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.22);border-radius:16px;padding:18px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">🤖</div>
+          <div style="font-size:12px;font-weight:800;color:#06b6d4;margin-bottom:6px;">Qwen3.5-35B-A3B</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.7;">SGLang server<br>127.0.0.1:30000<br>MoE: 3B active params<br>GPTQ-Int4 + moe_wna16</div>
+        </div>
+        <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.22);border-radius:16px;padding:18px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">🗄️</div>
+          <div style="font-size:12px;font-weight:800;color:#8b5cf6;margin-bottom:6px;">ChromaDB</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.7;">Persistent Volume<br>collections: products<br>collections: knowledge<br>Cosine similarity index</div>
+        </div>
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.22);border-radius:16px;padding:18px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">🔢</div>
+          <div style="font-size:12px;font-weight:800;color:#f59e0b;margin-bottom:6px;">E5-large Embed</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.7;">multilingual-e5-large<br>"query: " prefix<br>"passage: " prefix<br>Pre-baked in image</div>
+        </div>
+      </div>
+
+      <!-- Agentic Loop label -->
+      <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:18px;">⟳ Agentic Loop — max 3 iterations</div>
+
+      <!-- Loop steps: row 1 -->
+      <div style="display:grid;grid-template-columns:1fr 50px 1fr 50px 1fr;gap:0;align-items:start;margin-bottom:16px;">
+
+        <!-- Phase 1: API-->
+        <div style="background:rgba(59,130,246,0.08);border:1.5px solid rgba(59,130,246,0.22);border-radius:16px;padding:18px;">
+          <div style="font-size:10px;font-weight:800;color:#3b82f6;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">📨 API Request (Frontend)</div>
+          <div class="tl" style="--tl-line:rgba(59,130,246,0.35);--tl-dot:#3b82f6;--tl-glow:rgba(59,130,246,0.22);">
+            <div class="tl-item"><h4>POST /chat</h4><p>{ message, history[-20], context }</p></div>
+            <div class="tl-item"><h4>Build page_context</h4><p>page / cart / user / selectedProduct</p></div>
+            <div class="tl-item" style="padding-bottom:0;"><h4>Slice history</h4><p>10 turns / 50 000 tokens max</p></div>
+          </div>
+        </div>
+
+        <div class="arr" style="margin-top:60px;font-size:24px;">→</div>
+
+        <!-- Phase 2: LLM #1 -->
+        <div style="background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.22);border-radius:16px;padding:18px;">
+          <div style="font-size:10px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">🧠 LLM Call #1 — Intent Detection</div>
+          <div class="tl" style="--tl-line:rgba(245,158,11,0.35);--tl-dot:#f59e0b;--tl-glow:rgba(245,158,11,0.22);">
+            <div class="tl-item"><h4>tool_choice: auto</h4><p>2 tools: search_products, search_knowledge</p></div>
+            <div class="tl-item"><h4>temp 0.1 — thinking OFF</h4><p>max_tokens: 512 → fast response</p></div>
+            <div class="tl-item" style="padding-bottom:0;"><h4>finish_reason?</h4><p>"tool_calls" → execute tools<br>"stop" → skip to synthesis</p></div>
+          </div>
+        </div>
+
+        <div class="arr" style="margin-top:60px;font-size:24px;">→</div>
+
+        <!-- Phase 3: Tool Exec -->
+        <div style="background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.22);border-radius:16px;padding:18px;">
+          <div style="font-size:10px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">🔧 Parallel Tool Execution</div>
+          <div class="tl" style="--tl-line:rgba(16,185,129,0.35);--tl-dot:#10b981;--tl-glow:rgba(16,185,129,0.22);">
+            <div class="tl-item"><h4>asyncio.gather()</h4><p>Max 2 tools per iteration</p></div>
+            <div class="tl-item"><h4>Timeout: 5s / tool</h4><p>E5-large embed → ChromaDB query</p></div>
+            <div class="tl-item" style="padding-bottom:0;"><h4>Similarity ≥ 0.3</h4><p>Top 5 products / Top 3 knowledge docs</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loop steps: row 2 -->
+      <div style="display:grid;grid-template-columns:1fr 50px 1fr;gap:0;align-items:start;">
+
+        <!-- Phase 4: LLM #2 -->
+        <div style="background:rgba(236,72,153,0.08);border:1.5px solid rgba(236,72,153,0.22);border-radius:16px;padding:18px;">
+          <div style="font-size:10px;font-weight:800;color:#ec4899;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">✍️ LLM Call #2 — Synthesis + SSE Stream</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="tl" style="--tl-line:rgba(236,72,153,0.35);--tl-dot:#ec4899;--tl-glow:rgba(236,72,153,0.22);">
+              <div class="tl-item"><h4>Inject tool_results</h4><p>Build synthesis prompt với context từ tools</p></div>
+              <div class="tl-item" style="padding-bottom:0;"><h4>temp 0.7, stream: true</h4><p>thinking: OFF, max_tokens: 1024</p></div>
+            </div>
+            <div class="tl" style="--tl-line:rgba(236,72,153,0.35);--tl-dot:#ec4899;--tl-glow:rgba(236,72,153,0.22);">
+              <div class="tl-item"><h4>Stream text chunks</h4><p>Stop streaming khi gặp &lt;json&gt; tag</p></div>
+              <div class="tl-item" style="padding-bottom:0;"><h4>Emit SSE events</h4><p>text_chunk → action → sources → done</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arr" style="margin-top:60px;font-size:24px;">→</div>
+
+        <!-- Phase 5: Parse → Respond -->
+        <div style="background:rgba(139,92,246,0.08);border:1.5px solid rgba(139,92,246,0.22);border-radius:16px;padding:18px;">
+          <div style="font-size:10px;font-weight:800;color:#8b5cf6;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">📋 Parse Action &amp; SSE Response</div>
+          <div class="tl" style="--tl-line:rgba(139,92,246,0.35);--tl-dot:#8b5cf6;--tl-glow:rgba(139,92,246,0.22);">
+            <div class="tl-item"><h4>_parse_json_response()</h4><p>Extract từ &lt;json&gt;…&lt;/json&gt; trong LLM text</p></div>
+            <div class="tl-item"><h4>Validate action</h4><p>30+ valid actions → fallback "chat" nếu unknown</p></div>
+            <div class="tl-item"><h4>Multi-action support</h4><p>"actions": [] → sequential execution plan</p></div>
+            <div class="tl-item" style="padding-bottom:0;"><h4>SSE to Frontend</h4><p>data: {"type":"action","action":"search",...}</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 4 — DATA INGEST PIPELINE
+  ══════════════════════════════════════════════════ -->
+  <div class="sec">
+    <div class="dot" style="background:#f59e0b;box-shadow:0 0 9px #f59e0b;"></div>
+    <h2 style="color:#f59e0b;">④ Data Ingest Pipeline (ingest.py)</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card" style="padding:28px;">
+    <div class="card-top-bar" style="background:linear-gradient(90deg,#f59e0b,#10b981);"></div>
+
+    <div style="display:flex;align-items:flex-start;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;">
+
+      <div style="flex:1;min-width:130px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
+        <div class="fbox" style="background:rgba(245,158,11,0.12);border:1.5px solid rgba(245,158,11,0.35);color:#fcd34d;width:100%;">
+          <span class="ico">📄</span>product.csv<div class="sub">~600KB, hàng nghìn SP</div>
+        </div>
+      </div>
+      <div class="arr" style="margin-top:22px;padding:0 8px;">→</div>
+
+      <div style="flex:1;min-width:130px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="fbox" style="background:rgba(59,130,246,0.12);border:1.5px solid rgba(59,130,246,0.35);color:#93c5fd;width:100%;">
+          <span class="ico">🧹</span>BeautifulSoup<div class="sub">Strip HTML tags từ desc</div>
+        </div>
+      </div>
+      <div class="arr" style="margin-top:22px;padding:0 8px;">→</div>
+
+      <div style="flex:1;min-width:130px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="fbox" style="background:rgba(6,182,212,0.12);border:1.5px solid rgba(6,182,212,0.35);color:#67e8f9;width:100%;">
+          <span class="ico">🔗</span>Chunk Builder<div class="sub">Tên + Danh mục + Giá + Mô tả</div>
+        </div>
+      </div>
+      <div class="arr" style="margin-top:22px;padding:0 8px;">→</div>
+
+      <div style="flex:1;min-width:130px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="fbox" style="background:rgba(139,92,246,0.12);border:1.5px solid rgba(139,92,246,0.35);color:#c4b5fd;width:100%;">
+          <span class="ico">🔢</span>E5-large Embed<div class="sub">"passage: " prefix → vector</div>
+        </div>
+      </div>
+      <div class="arr" style="margin-top:22px;padding:0 8px;">→</div>
+
+      <div style="flex:1;min-width:130px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="fbox" style="background:rgba(16,185,129,0.12);border:1.5px solid rgba(16,185,129,0.35);color:#6ee7b7;width:100%;">
+          <span class="ico">🗄️</span>ChromaDB Write<div class="sub">Persistent Volume</div>
+        </div>
+      </div>
+      <div class="arr" style="margin-top:22px;padding:0 8px;">→</div>
+
+      <div style="flex:1;min-width:130px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="fbox" style="background:rgba(16,185,129,0.12);border:1.5px solid rgba(16,185,129,0.35);color:#6ee7b7;width:100%;">
+          <span class="ico">✅</span>Ready for Search<div class="sub">products + knowledge cols</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 5 — FULL LIFECYCLE SUMMARY
+  ══════════════════════════════════════════════════ -->
+  <div class="sec">
+    <div class="dot" style="background:#ec4899;box-shadow:0 0 9px #ec4899;"></div>
+    <h2 style="color:#ec4899;">⑤ Full Lifecycle — "Tìm thuốc ho" → Kết quả</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card" style="padding:28px;">
+    <div class="card-top-bar" style="background:linear-gradient(90deg,#8b5cf6,#06b6d4,#10b981,#f59e0b,#ec4899,#3b82f6);"></div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+
+      <!-- Phase A -->
+      <div>
+        <div style="font-size:10px;font-weight:800;color:#8b5cf6;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px;padding-left:20px;">🎙️ Voice Input Phase</div>
+        <div class="tl" style="--tl-line:rgba(139,92,246,0.4);--tl-dot:#8b5cf6;--tl-glow:rgba(139,92,246,0.25);">
+          <div class="tl-item"><h4>User nói: "Tìm thuốc ho"</h4><p>VAD phát hiện giọng trong 85–3400 Hz band</p></div>
+          <div class="tl-item"><h4>Web Speech API nhận dạng</h4><p>transcript = "Tìm thuốc ho" → isFinal = true</p></div>
+          <div class="tl-item"><h4>Noise filter pass</h4><p>3 ký tự unicode, không phải filler → OK</p></div>
+          <div class="tl-item" style="padding-bottom:0;"><h4>processCommand("Tìm thuốc ho")</h4><p>VoiceAgentContext kích hoạt pipeline</p></div>
+        </div>
+      </div>
+
+      <!-- Phase B -->
+      <div>
+        <div style="font-size:10px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px;padding-left:20px;">🤖 AI Processing Phase</div>
+        <div class="tl" style="--tl-line:rgba(16,185,129,0.4);--tl-dot:#10b981;--tl-glow:rgba(16,185,129,0.25);">
+          <div class="tl-item"><h4>POST /chat → Modal FastAPI</h4><p>{ message: "Tìm thuốc ho", history, context }</p></div>
+          <div class="tl-item"><h4>LLM #1: Intent Detection</h4><p>Qwen → finish_reason: "tool_calls"<br>→ search_products(query="thuốc ho")</p></div>
+          <div class="tl-item"><h4>ChromaDB vector search</h4><p>E5 embed → top 5 products, similarity ≥ 0.3</p></div>
+          <div class="tl-item" style="padding-bottom:0;"><h4>LLM #2: Synthesis + Stream</h4><p>Inject kết quả → tạo câu trả lời + action JSON</p></div>
+        </div>
+      </div>
+
+      <!-- Phase C -->
+      <div>
+        <div style="font-size:10px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px;padding-left:20px;">⚡ Action &amp; Output Phase</div>
+        <div class="tl" style="--tl-line:rgba(245,158,11,0.4);--tl-dot:#f59e0b;--tl-glow:rgba(245,158,11,0.25);">
+          <div class="tl-item"><h4>SSE: action = "search"</h4><p>payload: { query: "thuốc ho" } về Frontend</p></div>
+          <div class="tl-item"><h4>mapToolCallToIntent()</h4><p>→ AgentIntent { type: "search", entities: {...} }</p></div>
+          <div class="tl-item"><h4>executeAction("search")</h4><p>setSearchQuery("thuốc ho") → filteredProducts update → ShopPage re-render</p></div>
+          <div class="tl-item" style="padding-bottom:0;"><h4>TTS + Chat panel</h4><p>"Tôi đã tìm thấy X sản phẩm thuốc ho..."<br>→ resume listening sau 500ms</p></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Total time estimate -->
+    <div style="margin-top:24px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Ước tính thời gian:</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);border-radius:8px;padding:6px 14px;font-size:11px;"><span style="color:#a78bfa;font-weight:700;">STT</span> <span style="color:var(--muted);">~300ms</span></div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:6px 14px;font-size:11px;"><span style="color:#fcd34d;font-weight:700;">LLM #1</span> <span style="color:var(--muted);">~500ms</span></div>
+        <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:6px 14px;font-size:11px;"><span style="color:#6ee7b7;font-weight:700;">ChromaDB</span> <span style="color:var(--muted);">&lt;50ms</span></div>
+        <div style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.25);border-radius:8px;padding:6px 14px;font-size:11px;"><span style="color:#f9a8d4;font-weight:700;">LLM #2 (1st token)</span> <span style="color:var(--muted);">~400ms</span></div>
+        <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:6px 14px;font-size:11px;"><span style="color:#93c5fd;font-weight:700;">Action + TTS</span> <span style="color:var(--muted);">~200ms</span></div>
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;">Total ~1.5s (warm)</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+</body>
+</html>
